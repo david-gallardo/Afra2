@@ -23,21 +23,29 @@ const STORAGE_KEYS = {
   recursos: 'erp_recursos',
 };
 
-const DEFAULT_AJUSTOS = {
-  nom: 'Afra2',
-  model: 'Puma 32',
-  matricula: '7ª-BA-3-123-95',
+export const DEFAULT_AJUSTOS = {
+  nom: 'AFRA II',
+  model: 'Puma 32 (Naoglass)',
+  matricula: 'POL000CJV',
   mmsi: '224123456',
-  motor: 'Yanmar 3GM30F',
-  potencia: '27 CV',
+  motor: 'Solé Diesel Mini 33',
+  potencia: '31.4 CV',
   oliMotor: '15W40 Mineral',
-  capacitatOli: '2.6 L',
-  filtreOli: '128270-12500',
-  filtreGasoil: '104500-55710',
-  turbina: '128296-42070',
+  capacitatOli: '4.2 L',
+  filtreOli: '13124051',
+  filtreGasoil: '13114022',
+  turbina: '31211008R',
   horesInicials: '1200',
-  capacitatAigua: '150 L',
-  capacitatGasoil: '80 L',
+  capacitatAigua: '180 L',
+  capacitatGasoil: '60 L',
+  hin: 'PL-PL100AUSE022',
+  portBase: 'Gdańsk (Polònia)',
+  numCertificat: 'AA80815',
+  dataRegistre: '2024-03-28',
+  categoriaDisseny: 'A',
+  tripulacioMax: '4',
+  calat: '1.75',
+  checklistAnual: {},
 };
 
 const DEFAULT_PROJECTES = [

@@ -23,17 +23,32 @@ export default function Seguretat() {
         <p>Elements de seguretat, equips de supervivència i control d'inspeccions de l'embarcació</p>
       </div>
 
-      {/* Ràpid / Cheatsheet de Canals VHF d'Emergència */}
+      {/* Ràpid / Cheatsheet de Canals VHF d'Emergència & Equips Pendents */}
       <div className="dashboard-grid" style={{ marginBottom: 20 }}>
-        <div className="dashboard-card" style={{ gridColumn: 'span 2', padding: 14, background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--red)' }}>
+        <div className="dashboard-card" style={{ padding: 14, background: 'rgba(239, 68, 68, 0.05)', border: '1px solid var(--red)' }}>
           <h4 style={{ color: 'var(--red)', margin: '0 0 8px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 6 }}>🚨 CANALS VHF D'EMERGÈNCIA</h4>
-          <div style={{ fontSize: '0.8rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            <div><strong style={{color:'var(--red)'}}>Canal 16 (156.8 MHz):</strong> Emergència, Socors i Seguretat</div>
-            <div><strong>Canal 09:</strong> Serveis portuaris / Club Nàutic local</div>
-            <div><strong>Canal 70:</strong> DSC (Crida Selectiva Digital)</div>
-            <div><strong>Salvament Marítim:</strong> 900 202 202 / VHF Canal 16</div>
+          <div style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div><strong style={{color:'var(--red)'}}>Canal 16 (156.8 MHz):</strong> Socors i Seguretat</div>
+            <div><strong>Canal 09:</strong> Serveis portuaris / Club Nàutic</div>
+            <div><strong>Canal 70:</strong> DSC (Crida Selectiva)</div>
+            <div><strong>Salvament Marítim:</strong> 900 202 202 / VHF 16</div>
           </div>
         </div>
+
+        {(!seguretat.some(i => i.tipo === 'Balsa Salvavides' || i.nombre?.toLowerCase().includes('balsa')) ||
+          !seguretat.some(i => i.tipo === 'Ràdiobalisa' || i.nombre?.toLowerCase().includes('radiobalisa') || i.nombre?.toLowerCase().includes('epirb'))) && (
+          <div className="dashboard-card" style={{ padding: 14, background: 'rgba(245, 158, 11, 0.05)', border: '1px solid var(--orange)' }}>
+            <h4 style={{ color: 'var(--orange)', margin: '0 0 8px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 6 }}>⚠️ EQUIPS DE SEGURETAT DE TEMPORADA PENDENTS</h4>
+            <div style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {!seguretat.some(i => i.tipo === 'Balsa Salvavides' || i.nombre?.toLowerCase().includes('balsa')) && (
+                <div style={{ color: 'var(--orange)' }}>• <strong>Balsa Salvavides (ISO/9650):</strong> Recomanada Duarry. Pendent d'adquirir.</div>
+              )}
+              {!seguretat.some(i => i.tipo === 'Ràdiobalisa' || i.nombre?.toLowerCase().includes('radiobalisa') || i.nombre?.toLowerCase().includes('epirb')) && (
+                <div style={{ color: 'var(--orange)' }}>• <strong>Ràdiobalisa (EPIRB):</strong> Recomanada ACR GlobalFix. Pendent d'adquirir.</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="toolbar"><div /><button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nou element</button></div>

@@ -16,13 +16,59 @@ export default function Farmaciola() {
   const save = () => { if (!form.nombre) return; editItem ? updateFarmaciola(editItem.id, form) : addFarmaciola(form); setModal(false); };
   const tipos = ['Medicament', 'Vendatge', 'Antisèptic', 'Material Quirúrgic', 'Altres'];
 
+  const prepolarFarmaciola = () => {
+    if (window.confirm("Vols afegir els 24 medicaments i materials de la farmaciola de seguretat estàndard (segons el llibre de manteniment del vaixell)?")) {
+      const itemsEstandard = [
+        { nombre: 'Topionic', tipo: 'Antisèptic', cantidad: '1', caducidad: '', notas: 'Antisèptic general. Llibre de Manteniment.' },
+        { nombre: 'Azol (gotes col·liri / sulfamida 0,25 mg/ml, 10 ml)', tipo: 'Antisèptic', cantidad: '1', caducidad: '', notas: 'Sulfamida desinfectant ocular. Llibre de Manteniment.' },
+        { nombre: 'Silvaderma (tub crema)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Crema per a cremades. Llibre de Manteniment.' },
+        { nombre: 'Linitul (apòsits)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Apòsit impregnat per a cremades. Llibre de Manteniment.' },
+        { nombre: 'Paracetamol', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Analgèsic general. Llibre de Manteniment.' },
+        { nombre: 'Biodramina (20 comp.)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Antimareig. Llibre de Manteniment.' },
+        { nombre: 'Fortasec (càpsules)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Antidiarreic. Llibre de Manteniment.' },
+        { nombre: 'Epixtasol (ampolles)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Antihemorràgic. Llibre de Manteniment.' },
+        { nombre: 'Optrex (col·liri)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Neteja ocular. Llibre de Manteniment.' },
+        { nombre: 'Buscapina (12 comp. 50 mg)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Antiespasmòdic / dolor abdominal. Llibre de Manteniment.' },
+        { nombre: 'AAS 500 (Aspirina)', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Antiinflamatori / analgèsic. Llibre de Manteniment.' },
+        { nombre: 'Cafinitrina', tipo: 'Medicament', cantidad: '1', caducidad: '', notas: 'Problemes cardíacs aguts. Llibre de Manteniment.' },
+        { nombre: 'Fèrula de fixació', tipo: 'Material Quirúrgic', cantidad: '1', caducidad: '', notas: 'Inmobilització de fractures. Llibre de Manteniment.' },
+        { nombre: 'Vendes elàstiques adhesives (7,5 cm)', tipo: 'Vendatge', cantidad: '2', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Compreses de gasa estèrils (20 x 20 cm, 40 unit.)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Cotó hidròfil (100 g)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Esparadrap hipoalergènic (5 cm x 10 m)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Guants de làtex (Talla 8-9)', tipo: 'Material Quirúrgic', cantidad: '1', caducidad: '', notas: 'Protecció sanitària. Llibre de Manteniment.' },
+        { nombre: 'Apòsits compressius estèrils', tipo: 'Vendatge', cantidad: '3', caducidad: '', notas: 'Aturar hemorràgies. Llibre de Manteniment.' },
+        { nombre: 'Apòsits de calor', tipo: 'Altres', cantidad: '1', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Gases grasses (caixa 20 sobres, 7x9 cm)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Llibre de Manteniment.' },
+        { nombre: 'Apòsits adhesius plàstics (rotllo 1 m x 6 cm)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Tirites. Llibre de Manteniment.' },
+        { nombre: 'Sutures adhesives (paquet 6 x 100)', tipo: 'Vendatge', cantidad: '1', caducidad: '', notas: 'Tancament de ferides petites. Llibre de Manteniment.' },
+        { nombre: 'Goma Smarch / Torniquet', tipo: 'Material Quirúrgic', cantidad: '1', caducidad: '', notas: 'Torniquet per a grans hemorràgies. Llibre de Manteniment.' }
+      ];
+
+      let afegits = 0;
+      itemsEstandard.forEach(item => {
+        const existeix = farmaciola.some(f => f.nombre?.toLowerCase().trim() === item.nombre.toLowerCase().trim());
+        if (!existeix) {
+          addFarmaciola(item);
+          afegits++;
+        }
+      });
+      alert(`S'han afegit ${afegits} productes a la farmaciola! Recorda revisar i introduir les dates de caducitat reals.`);
+    }
+  };
+
   return (
     <>
       <div className="page-header">
         <h1>💊 Farmaciola de Seguretat</h1>
         <p>Medicaments, material sanitari i dates de caducitat obligatòries</p>
       </div>
-      <div className="toolbar"><div /><button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nou element</button></div>
+      <div className="toolbar" style={{ justifyContent: 'space-between', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <button className="btn btn-ghost" onClick={prepolarFarmaciola} style={{ border: '1px dashed var(--accent)', color: 'var(--accent)' }}>
+          📦 Pre-popular Farmaciola Estàndard
+        </button>
+        <button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nou element</button>
+      </div>
       {farmaciola.length === 0 ? <EmptyState icon={Icons.heart} message="Farmaciola buida." /> : (
         <div className="item-list">{farmaciola.map(item => {
           const ec = getExpiryClass(item.caducidad);

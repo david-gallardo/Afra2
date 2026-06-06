@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useData } from '@/context/DataContext';
+import { useData, DEFAULT_AJUSTOS } from '@/context/DataContext';
 
 export default function Ajustos() {
   const { loaded, ajustos, saveAjustos, exportData, importData } = useData();
@@ -19,6 +19,16 @@ export default function Ajustos() {
     saveAjustos(form);
     setMsg('Configuració desada correctament! ✅');
     setTimeout(() => setMsg(''), 3000);
+  };
+
+  const loadPumaDefaults = () => {
+    if (window.confirm("Vols sobreescriure les dades actuals amb les dades reals del Puma 32 i Solé Diesel Mini 33 del llibre de manteniment?")) {
+      const merged = { ...form, ...DEFAULT_AJUSTOS };
+      setForm(merged);
+      saveAjustos(merged);
+      setMsg('Dades del Puma 32 i Solé Mini 33 carregades correctament! ⛵');
+      setTimeout(() => setMsg(''), 3000);
+    }
   };
 
   const handleExport = () => {
@@ -122,6 +132,26 @@ export default function Ajustos() {
           <div className="form-row">
             <div className="form-group"><label>Matrícula / Patente</label><input value={form.matricula || ''} onChange={e => setForm({ ...form, matricula: e.target.value })} /></div>
             <div className="form-group"><label>MMSI (Ràdio)</label><input value={form.mmsi || ''} onChange={e => setForm({ ...form, mmsi: e.target.value })} /></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>HIN / CIN (Identificació Casc)</label><input value={form.hin || ''} onChange={e => setForm({ ...form, hin: e.target.value })} placeholder="Ex: PL-PL100AUSE022" /></div>
+            <div className="form-group"><label>Port Base</label><input value={form.portBase || ''} onChange={e => setForm({ ...form, portBase: e.target.value })} placeholder="Ex: Gdańsk (Polònia)" /></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Número de Certificat</label><input value={form.numCertificat || ''} onChange={e => setForm({ ...form, numCertificat: e.target.value })} placeholder="Ex: AA80815" /></div>
+            <div className="form-group"><label>Data de Registre</label><input type="date" value={form.dataRegistre || ''} onChange={e => setForm({ ...form, dataRegistre: e.target.value })} /></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Categoria de Disseny</label><input value={form.categoriaDisseny || ''} onChange={e => setForm({ ...form, categoriaDisseny: e.target.value })} placeholder="Ex: A" /></div>
+            <div className="form-group"><label>Tripulació Màxima</label><input type="number" value={form.tripulacioMax || ''} onChange={e => setForm({ ...form, tripulacioMax: e.target.value })} /></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Calat de l'Embarcació (m)</label><input type="number" step="0.01" value={form.calat || ''} onChange={e => setForm({ ...form, calat: e.target.value })} placeholder="Ex: 1.75" /></div>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={loadPumaDefaults} style={{ width: '100%', border: '1px dashed var(--accent)', color: 'var(--accent)' }}>
+                🔄 Carregar dades reals Puma 32 i Solé 33
+              </button>
+            </div>
           </div>
           <div className="form-row">
             <div className="form-group"><label>Dipòsit d'Aigua Dolça (L)</label><input type="number" value={form.capacitatAigua || ''} onChange={e => setForm({ ...form, capacitatAigua: e.target.value })} /></div>
