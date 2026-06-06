@@ -66,16 +66,16 @@ export async function GET(req) {
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0A1628; color: #F3F4F6; border-radius: 12px; border: 1px solid #1E3050;">
         <div style="text-align: center; border-bottom: 2px solid #1E3050; padding-bottom: 20px; margin-bottom: 24px;">
           <span style="font-size: 40px;">⛵</span>
-          <h1 style="color: #4FC3F7; margin: 10px 0 5px 0; font-size: 24px;">Control Setmanal: S/Y Afra2</h1>
+          <h1 style="color: #4FC3F7; margin: 10px 0 5px 0; font-size: 24px;">Control Setmanal: S/Y Afra II</h1>
           <p style="color: #8A9BB0; margin: 0; font-size: 14px;">Resum generat automàticament el ${avui.toLocaleDateString('ca-ES')}</p>
         </div>
-    `;
+      `;
 
     if (!teAlertes) {
       htmlContent += `
         <div style="text-align: center; padding: 30px 20px; background-color: #111D33; border-radius: 8px; border: 1px solid #1E3050;">
           <span style="font-size: 32px;">✅</span>
-          <h3 style="color: #4ADE80; margin: 10px 0;">Tot al dia a bord!</h3>
+          <h3 style="color: #4ADE80; margin: 10px 0;">No hi ha cap alerta a bord</h3>
           <p style="color: #8A9BB0; font-size: 14px; margin: 0;">No s'ha detectat cap medicament, aliment o equip de seguretat caducat (o a punt de caducar d'aquí a 30 dies), ni tampoc revisions de manteniment properes.</p>
         </div>
       `;
@@ -129,7 +129,7 @@ export async function GET(req) {
 
     htmlContent += `
         <div style="text-align: center; border-top: 1px solid #1E3050; padding-top: 20px; margin-top: 30px; font-size: 12px; color: #5A6E85;">
-          <p style="margin: 0;">S/Y Afra2 ERP — Creat amb ❤️ per al teu vaixell.</p>
+          <p style="margin: 0;">S/Y Afra II ERP — Creat amb ❤️ per al teu vaixell.</p>
           <p style="margin: 5px 0 0 0;"><a href="http://localhost:3000" style="color: #4FC3F7; text-decoration: none;">Obrir ERP en local</a></p>
         </div>
       </div>
@@ -155,6 +155,10 @@ export async function GET(req) {
       });
     }
 
+    const subject = teAlertes 
+      ? `📋 Avisos de Control: S/Y Afra II (${avui.toLocaleDateString('ca-ES')})`
+      : `✅ S/Y Afra II: No hi ha cap alerta (${avui.toLocaleDateString('ca-ES')})`;
+
     const resSend = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -163,9 +167,9 @@ export async function GET(req) {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        sender: { name: 'S/Y Afra2', email: 'no-reply@afra2.local' },
+        sender: { name: 'S/Y Afra II', email: destí },
         to: [{ email: destí, name: 'David Gallardo' }],
-        subject: `📋 Avisos de Control: S/Y Afra2 (${avui.toLocaleDateString('ca-ES')})`,
+        subject: subject,
         htmlContent: htmlContent
       })
     });
