@@ -9,6 +9,7 @@ export default function Despeses() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({});
   const [search, setSearch] = useState('');
+  const [selectedYear, setSelectedYear] = useState('Tots');
 
   if (!loaded) return null;
 
@@ -53,15 +54,29 @@ export default function Despeses() {
     setModal(false); 
   };
 
-  const total = despeses.reduce((s, g) => s + (parseFloat(g.importe) || 0), 0);
-  const uniqueYears = Array.from(new Set(despeses.map(d => d.fecha ? new Date(d.fecha).getFullYear() : null).filter(Boolean)));
+  // 1. Cercar anys únics del total històric per al filtre superior
+  const years = Array.from(new Set(despeses.map(item => {
+    if (!item.fecha) return null;
+    return new Date(item.fecha).getFullYear().toString();
+  }).filter(Boolean))).sort((a, b) => b - a);
+
+  // 2. Filtrar les despeses segons l'any seleccionat per als càlculs i el gràfic
+  const filteredForStats = despeses.filter(d => {
+    if (selectedYear === 'Tots') return true;
+    if (!d.fecha) return false;
+    return new Date(d.fecha).getFullYear().toString() === selectedYear;
+  });
+
+  const total = filteredForStats.reduce((s, g) => s + (parseFloat(g.importe) || 0), 0);
+  const uniqueYears = Array.from(new Set(filteredForStats.map(d => d.fecha ? new Date(d.fecha).getFullYear() : null).filter(Boolean)));
   const numYears = uniqueYears.length || 1;
   const mitjanaPerAny = total / numYears;
 
   const categories = ['Manteniment', 'Combustible', 'Amarrador / Port', 'Assegurança', 'ITB / Impostos', 'Rebost / Celler', 'Electrònica', 'Veles i Axarcia', 'Material / Pintura', 'Altres'];
   const mantenimentCategories = ['General', 'Motor', 'Casc i Cua', 'Electricitat', 'Veles i Axarcia', 'Electrònica', 'Fondeig', 'Fontaneria', 'Altres'];
   
-  const filtered = despeses.filter(g => g.concepto?.toLowerCase().includes(search.toLowerCase()));
+  // 3. Filtrar de forma final per la cerca de text
+  const filtered = filteredForStats.filter(g => g.concepto?.toLowerCase().includes(search.toLowerCase()));
 
   const CATEGORY_COLORS = {
     'Manteniment': '#38BDF8',
@@ -76,7 +91,7 @@ export default function Despeses() {
     'Altres': '#9CA3AF',
   };
 
-  const totalsByCategory = despeses.reduce((acc, d) => {
+  const totalsByCategory = filteredForStats.reduce((acc, d) => {
     let cat = d.categoria || 'Altres';
     if (cat === 'Celler / Provisions') cat = 'Rebost / Celler';
     const imp = parseFloat(d.importe) || 0;
@@ -88,20 +103,16 @@ export default function Despeses() {
     .map(([category, amount]) => ({ category, amount, percentage: total > 0 ? (amount / total) * 100 : 0 }))
     .sort((a, b) => b.amount - a.amount);
 
-  let accumulatedPercentage = 0;
-  const segments = sortedCategories.map(cat => {
-    const percentage = cat.percentage;
-    const strokeLength = (percentage / 100) * 251.327;
-    const strokeOffset = 251.327 - (accumulatedPercentage / 100) * 251.327;
-    accumulatedPercentage += percentage;
+  // Generació del gradient conic-gradient
+  let conicParts = [];
+  let currentPercentage = 0;
+  sortedCategories.forEach(cat => {
+    const nextPercentage = currentPercentage + cat.percentage;
     const color = CATEGORY_COLORS[cat.category] || '#9CA3AF';
-    return {
-      ...cat,
-      strokeLength,
-      strokeOffset,
-      color
-    };
+    conicParts.push(`${color} ${currentPercentage.toFixed(1)}% ${nextPercentage.toFixed(1)}%`);
+    currentPercentage = nextPercentage;
   });
+  const conicGradientString = conicParts.length > 0 ? `conic-gradient(${conicParts.join(', ')})` : 'rgba(255, 255, 255, 0.05)';
 
   return (
     <>
@@ -121,11 +132,11 @@ export default function Despeses() {
         </div>
         <div className="summary-card">
           <div className="summary-card-label">Nº de pagaments</div>
-          <div className="summary-card-value accent">{despeses.length}</div>
+          <div className="summary-card-value accent">{filteredForStats.length}</div>
         </div>
       </div>
 
-      {despeses.length > 0 && (
+      {filteredForStats.length > 0 && (
         <div className="dashboard-card" style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '25px', padding: '24px' }}>
           <div style={{ flex: '1 1 250px' }}>
             <h3 style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -152,24 +163,24 @@ export default function Despeses() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: '0 0 200px', margin: 'auto' }}>
             <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-              <svg width="150" height="150" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-                {segments.map((seg, idx) => (
-                  <circle
-                    key={idx}
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    fill="transparent"
-                    stroke={seg.color}
-                    strokeWidth="12"
-                    strokeDasharray={`${seg.strokeLength} 251.327`}
-                    strokeDashoffset={seg.strokeOffset}
-                    style={{ transition: 'all 0.3s' }}
-                  />
-                ))}
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ 
+                width: '100%', 
+                height: '100%', 
+                borderRadius: '50%',
+                background: conicGradientString,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                transition: 'background 0.3s ease'
+              }} />
+              <div style={{ 
+                position: 'absolute', 
+                inset: '12px', 
+                borderRadius: '50%', 
+                backgroundColor: 'var(--bg-card)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>{formatCurrency(total)}</span>
               </div>
@@ -185,6 +196,26 @@ export default function Despeses() {
         </div>
         <button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nova despesa</button>
       </div>
+
+      {years.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+          <button 
+            className={`btn btn-sm ${selectedYear === 'Tots' ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setSelectedYear('Tots')}
+          >
+            Tots els anys
+          </button>
+          {years.map(y => (
+            <button
+              key={y}
+              className={`btn btn-sm ${selectedYear === y ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setSelectedYear(y)}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      )}
       
       {filtered.length === 0 ? <EmptyState icon={Icons.dollar} message="Sense despeses registrades." /> : (
         <div className="item-list">{filtered.map(item => (
