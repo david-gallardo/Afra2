@@ -1,13 +1,13 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'ERP Puma — Gestión de Embarcación',
-  description: 'Sistema ERP personal para la gestión integral de tu embarcación: mantenimiento, inventario, provisiones, seguridad y más.',
+  title: "ERP Afra II — Gestió d'Embarcació",
+  description: "Sistema ERP personal per a la gestió integral de la teva embarcació: manteniment, inventari, provisions, seguretat i més.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
+    <html lang="ca">
       <body>{children}</body>
     </html>
   );
