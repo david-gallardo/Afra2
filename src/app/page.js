@@ -80,6 +80,11 @@ export default function Home() {
     setSidebarOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('erp_session_user');
+    window.location.reload();
+  };
+
   const ActiveComponent = MODULES[activeModule] || Dashboard;
 
   if (authLoading) {
@@ -108,7 +113,7 @@ export default function Home() {
         <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-brand" onClick={() => navigate('dashboard')} style={{ cursor: 'pointer' }}>
             {Icons.anchor}
-            <span>S/Y Puma</span>
+            <span>S/Y Afra II</span>
           </div>
           <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>
             {Icons.close}
@@ -125,6 +130,16 @@ export default function Home() {
                 </button>
               </li>
             ))}
+            {/* Botó de Tancar Sessió */}
+            <li style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+              <button
+                onClick={handleLogout}
+                style={{ color: '#F87171', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                Tancar Sessió
+              </button>
+            </li>
           </ul>
         </nav>
 
@@ -132,7 +147,7 @@ export default function Home() {
         <header className="header">
           <div className="header-brand" onClick={() => navigate('dashboard')} style={{ cursor: 'pointer' }}>
             {Icons.anchor}
-            <span>S/Y Puma</span>
+            <span>S/Y Afra II</span>
           </div>
           <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
             {Icons.menu}
