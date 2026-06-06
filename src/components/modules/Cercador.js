@@ -11,7 +11,7 @@ export default function Cercador({ onNavigate }) {
   const MODULE_METADATA = {
     manteniment: { name: 'Manteniment', icon: Icons.wrench, key: 'manteniment' },
     inventari: { name: 'Inventari i Peces', icon: Icons.box, key: 'inventari' },
-    despensa: { name: 'Despensa / Celler', icon: Icons.coffee, key: 'despensa' },
+    despensa: { name: 'Rebost / Celler', icon: Icons.coffee, key: 'despensa' },
     farmaciola: { name: 'Farmaciola', icon: Icons.heart, key: 'farmaciola' },
     seguretat: { name: 'Seguretat i Emerg.', icon: Icons.shield, key: 'seguretat' },
     compras: { name: 'Llista Compra', icon: Icons.cart, key: 'compras' },

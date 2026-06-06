@@ -4,9 +4,10 @@ import { useData } from '@/context/DataContext';
 import { Icons, formatDate, formatCurrency } from '@/components/UI';
 
 export default function Dashboard() {
-  const { loaded, tasques, despeses, combustible, manteniment, inventari, farmaciola, seguretat, ajustos } = useData();
+  const { loaded, tasques, despeses, combustible, manteniment, inventari, farmaciola, seguretat, despensa, ajustos } = useData();
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailMsg, setEmailMsg] = useState('');
+  const [statusModal, setStatusModal] = useState(false);
 
   if (!loaded) return null;
 
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const alertesFarmaciola = farmaciola.map(item => comprovaAlerta(item, 'caducidad')).filter(Boolean);
   const alertesDespensa = despensa.map(item => comprovaAlerta(item, 'caducidad')).filter(Boolean);
   const alertesManteniment = manteniment.map(item => comprovaAlerta(item, 'proximaRevision')).filter(Boolean);
+  const alertesInventari = inventari.filter(i => i.alertaMinima && parseInt(i.stock) <= parseInt(i.alertaMinima));
 
   const totalAlertesActives = alertesSeguretat.length + alertesFarmaciola.length + alertesDespensa.length + alertesManteniment.length;
 
@@ -149,7 +151,7 @@ export default function Dashboard() {
 
               {alertesDespensa.length > 0 && (
                 <div>
-                  <h4 style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🥫 Despensa i Provisions</h4>
+                  <h4 style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🥫 Rebost i Provisions</h4>
                   <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>
                     {alertesDespensa.map(({ item, diffDays }) => (
                       <li key={item.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border-color)' }}>
@@ -183,6 +185,13 @@ export default function Dashboard() {
               style={{ padding: '8px 16px', fontSize: '0.85rem' }}
             >
               {emailLoading ? '⏳ S\'està enviant...' : '📧 Enviar Informe per Email (Brevo)'}
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setStatusModal(true)}
+              style={{ padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>📋</span> Veure Estat i Alertes en Viu
             </button>
             {emailMsg && (
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>
@@ -239,6 +248,162 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {statusModal && (
+        <div className="modal-overlay" onClick={() => setStatusModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px', width: '90%' }}>
+            <div className="modal-header">
+              <h2>📋 Estat de Control i Inventari de Borda</h2>
+              <button className="modal-close" onClick={() => setStatusModal(false)}>×</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '0.9rem' }}>
+              <div style={{ padding: '12px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <div><strong>Vaixell:</strong> <span className="text-accent">{ajustos.nom || 'S/Y Afra II'}</span></div>
+                <div><strong>Hores Motor:</strong> <span className="text-accent">{horesActuals.toFixed(1)} h</span></div>
+                <div><strong>Data:</strong> <span>{formatDate(new Date())}</span></div>
+              </div>
+
+              {/* Contenidor de llistes */}
+              <div style={{ maxHeight: '55vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', paddingRight: '5px' }}>
+                
+                {/* 🚨 SEGURETAT */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', color: 'var(--red)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                    <span>🚨</span> Seguretat i Emergències
+                  </h3>
+                  {alertesSeguretat.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>✅ Tot al dia (sense elements caducats)</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                      {alertesSeguretat.map(({ item, diffDays }) => (
+                        <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span>{item.nombre}</span>
+                          <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', fontWeight: 'bold' }}>
+                            {diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 💊 FARMACIOLA */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', color: 'var(--orange)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                    <span>💊</span> Farmaciola i Salut
+                  </h3>
+                  {alertesFarmaciola.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>✅ Tot al dia (sense elements caducats)</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                      {alertesFarmaciola.map(({ item, diffDays }) => (
+                        <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span>{item.nombre}</span>
+                          <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', fontWeight: 'bold' }}>
+                            {diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 🥫 REBOST */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                    <span>🥫</span> Rebost i Provisions
+                  </h3>
+                  {alertesDespensa.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>✅ Tot al dia (sense provisions caducades)</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                      {alertesDespensa.map(({ item, diffDays }) => (
+                        <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span>{item.nombre}</span>
+                          <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', fontWeight: 'bold' }}>
+                            {diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 🔧 MANTENIMENT */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                    <span>🔧</span> Revisions i Manteniment
+                  </h3>
+                  {alertesManteniment.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>✅ Tot al dia (sense revisions pendents)</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                      {alertesManteniment.map(({ item, diffDays }) => (
+                        <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span>{item.titulo}</span>
+                          <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', fontWeight: 'bold' }}>
+                            {diffDays < 0 ? `Vencida fa ${Math.abs(diffDays)} dies` : `Toca en ${diffDays} dies`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 📦 INVENTARI SOTA MÍNIMS */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', color: 'var(--orange)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                    <span>📦</span> Inventari i Recanvis sota Mínims
+                  </h3>
+                  {alertesInventari.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>✅ Stock complet (sense recanvis sota mínims)</p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                      {alertesInventari.map(item => (
+                        <li key={item.id} style={{ display: 'flex', flexDirection: 'column', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ fontWeight: 500 }}>{item.nombre}</span>
+                            <span style={{ color: 'var(--orange)', fontWeight: 'bold' }}>
+                              Stock: {item.stock} / Mínim: {item.alertaMinima}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            Ubicació: {item.ubicacionGeneral || 'Sense assignar'} {item.ubicacionEspecifica ? `(${item.ubicacionEspecifica})` : ''}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Botons d'acció */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '15px', marginTop: '5px' }}>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={triggerEmail} 
+                  disabled={emailLoading}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {emailLoading ? '⏳ S\'està enviant...' : '📧 Enviar per Correu (Brevo)'}
+                </button>
+                <button className="btn btn-secondary" onClick={() => setStatusModal(false)}>
+                  Tancar
+                </button>
+              </div>
+
+              {emailMsg && (
+                <div style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent)' }}>
+                  {emailMsg}
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

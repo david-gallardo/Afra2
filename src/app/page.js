@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { key: 'bitacola', label: 'Bitàcola', icon: Icons.book },
   { key: 'despeses', label: 'Finances', icon: Icons.dollar },
   { key: 'compras', label: 'Llista Compra', icon: Icons.cart },
-  { key: 'despensa', label: 'Despensa / Celler', icon: Icons.coffee },
+  { key: 'despensa', label: 'Rebost / Celler', icon: Icons.coffee },
   { key: 'farmaciola', label: 'Farmaciola', icon: Icons.heart },
   { key: 'seguretat', label: 'Seguretat i Emerg.', icon: Icons.shield },
   { key: 'documents', label: 'Documents i Manuals', icon: Icons.file },

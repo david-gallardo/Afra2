@@ -28,7 +28,7 @@ export default function Despensa() {
   return (
     <>
       <div className="page-header">
-        <h1>🥫 Control de Despensa</h1>
+        <h1>🥫 Control de Rebost</h1>
         <p>Provisions de menjar i beguda a bord. Dates de caducitat per a travesses llargues.</p>
       </div>
       {expiring > 0 && (
@@ -41,7 +41,7 @@ export default function Despensa() {
         <div className="toolbar-search">{Icons.search}<input placeholder="Buscar provisions..." value={search} onChange={e => setSearch(e.target.value)} /></div>
         <button className="btn btn-primary" onClick={openNew}>{Icons.plus} Afegir provisió</button>
       </div>
-      {filtered.length === 0 ? <EmptyState icon={Icons.coffee} message="Despensa buida. Afegeix menjar o beguda." /> : (
+      {filtered.length === 0 ? <EmptyState icon={Icons.coffee} message="Rebost buit. Afegeix menjar o beguda." /> : (
         <div className="item-list">{filtered.map(item => (
           <AccordionItem key={item.id} title={item.nombre} subtitle={item.ubicacion} badge={`${item.cantidad} ud.`} badgeClass="stock">
             <div className="item-details">
