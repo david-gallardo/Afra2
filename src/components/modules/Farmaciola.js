@@ -4,18 +4,19 @@ import { useData } from '@/context/DataContext';
 import { Modal, AccordionItem, EmptyState, Icons, getExpiryClass, getExpiryLabel } from '@/components/UI';
 
 export default function Farmaciola() {
-  const { loaded, farmaciola, addFarmaciola, addMultipleFarmaciola, updateFarmaciola, deleteFarmaciola } = useData();
+  const { loaded, farmaciola, addFarmaciola, addMultipleFarmaciola, updateFarmaciola, deleteFarmaciola, setAllFarmaciolaPending } = useData();
   const [modal, setModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({});
 
   if (!loaded) return null;
 
-  const openNew = () => { setForm({ nombre: '', cantidad: '1', caducidad: '', tipo: 'Medicament', estado: 'A bord', notas: '' }); setEditItem(null); setModal(true); };
-  const openEdit = (item) => { setForm({ estado: 'A bord', ...item }); setEditItem(item); setModal(true); };
+  // El nou element s'afegeix com a 'Pendent' per defecte (l'usuari el marcarà 'A bord' en comprar-lo)
+  const openNew = () => { setForm({ nombre: '', cantidad: '1', caducidad: '', tipo: 'Medicament', estado: 'Pendent', notas: '' }); setEditItem(null); setModal(true); };
+  const openEdit = (item) => { setForm({ estado: 'Pendent', ...item }); setEditItem(item); setModal(true); };
   const save = () => { 
     if (!form.nombre) return; 
-    const finalForm = { estado: 'A bord', ...form };
+    const finalForm = { estado: 'Pendent', ...form };
     editItem ? updateFarmaciola(editItem.id, finalForm) : addFarmaciola(finalForm); 
     setModal(false); 
   };
@@ -57,11 +58,20 @@ export default function Farmaciola() {
 
       if (toAdd.length > 0) {
         await addMultipleFarmaciola(toAdd);
-        alert(`S'han afegit ${toAdd.length} productes a la farmaciola com a 'Pendents'!`);
+        alert(`S'han afegit ${toAdd.length} productes a la farmaciola en estat 'Pendent'!`);
       } else {
         alert("Tots els productes estàndard ja estan registrats a la farmaciola.");
       }
     }
+  };
+
+  const toggleEstado = (item) => {
+    const nouEstado = item.estado === 'Pendent' ? 'A bord' : 'Pendent';
+    updateFarmaciola(item.id, {
+      ...item,
+      estado: nouEstado,
+      caducidad: nouEstado === 'Pendent' ? '' : (item.caducidad || '')
+    });
   };
 
   const totalItems = farmaciola.length;
@@ -92,9 +102,24 @@ export default function Farmaciola() {
       </div>
 
       <div className="toolbar" style={{ justifyContent: 'space-between', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button className="btn btn-ghost" onClick={prepolarFarmaciola} style={{ border: '1px dashed var(--accent)', color: 'var(--accent)' }}>
-          📦 Pre-popular Farmaciola Estàndard
-        </button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button className="btn btn-ghost" onClick={prepolarFarmaciola} style={{ border: '1px dashed var(--accent)', color: 'var(--accent)' }}>
+            📦 Pre-popular Farmaciola Estàndard
+          </button>
+          {farmaciola.length > 0 && (
+            <button 
+              className="btn btn-ghost" 
+              onClick={() => {
+                if (window.confirm("Vols marcar ABSOLUTAMENT TOTS els productes de la farmaciola com a 'Pendents'?")) {
+                  setAllFarmaciolaPending();
+                }
+              }} 
+              style={{ border: '1px dashed var(--orange)', color: 'var(--orange)' }}
+            >
+              ⚠️ Tot Pendent
+            </button>
+          )}
+        </div>
         <button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nou element</button>
       </div>
 
@@ -121,9 +146,18 @@ export default function Farmaciola() {
                 )}
               </div>
               {item.notas && <p style={{marginTop:12,fontSize:'0.85rem',color:'var(--text-secondary)'}}>{item.notas}</p>}
-              <div className="item-actions">
-                <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}>{Icons.edit} Editar</button>
-                <button className="btn btn-danger btn-sm" onClick={() => deleteFarmaciola(item.id)}>{Icons.trash} Esborrar</button>
+              <div className="item-actions" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: 12 }}>
+                <button 
+                  className={`btn btn-sm ${isPendent ? 'btn-primary' : 'btn-ghost'}`} 
+                  onClick={() => toggleEstado(item)}
+                  style={{ border: isPendent ? 'none' : '1px solid var(--border-color)' }}
+                >
+                  {isPendent ? '📥 Canviar a: A bord' : '⚠️ Canviar a: Pendent'}
+                </button>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}>{Icons.edit} Editar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => deleteFarmaciola(item.id)}>{Icons.trash} Esborrar</button>
+                </div>
               </div>
             </AccordionItem>
           );
@@ -135,7 +169,7 @@ export default function Farmaciola() {
         <div className="form-row">
           <div className="form-group"><label>Quantitat</label><input type="number" value={form.cantidad||''} onChange={e => setForm({...form, cantidad: e.target.value})} /></div>
           <div className="form-group"><label>Estat</label>
-            <select value={form.estado || 'A bord'} onChange={e => setForm({...form, estado: e.target.value})}>
+            <select value={form.estado || 'Pendent'} onChange={e => setForm({...form, estado: e.target.value})}>
               <option value="A bord">A bord (Disponible)</option>
               <option value="Pendent">Pendent d'adquirir</option>
             </select>

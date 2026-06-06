@@ -326,6 +326,24 @@ export function DataProvider({ children }) {
     }
   }, []);
 
+  const setAllFarmaciolaPending = useCallback(async () => {
+    const updated = farmaciola.map(item => ({
+      ...item,
+      estado: 'Pendent',
+      caducidad: ''
+    }));
+    setFarmaciola(updated);
+    saveToStorage(STORAGE_KEYS.farmaciola, updated);
+    
+    try {
+      for (const item of updated) {
+        await supabase.from('farmaciola').upsert({ id: item.id, data: item });
+      }
+    } catch (err) {
+      console.error('Error de sincronització setAllFarmaciolaPending:', err);
+    }
+  }, [farmaciola]);
+
   const importData = useCallback(async (jsonData) => {
     try {
       const data = JSON.parse(jsonData);
@@ -415,6 +433,7 @@ export function DataProvider({ children }) {
     addMultipleFarmaciola: addMultipleItems('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     updateFarmaciola: updateItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     deleteFarmaciola: deleteItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
+    setAllFarmaciolaPending,
 
     seguretat,
     addSeguretat: addItem('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),
