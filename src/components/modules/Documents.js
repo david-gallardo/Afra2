@@ -72,7 +72,7 @@ export default function Documents() {
         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
           Fitxers pre-carregats de la documentació tècnica i registre oficial:
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {staticDocs.map((doc, idx) => (
             <a 
               key={idx} 
@@ -84,15 +84,21 @@ export default function Documents() {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center', 
-                padding: '10px 14px', 
+                padding: '12px 16px', 
                 border: '1px solid var(--border-color)', 
-                borderRadius: '6px',
+                borderRadius: '8px',
                 textAlign: 'left',
-                fontSize: '0.85rem'
+                fontSize: '0.90rem',
+                width: '100%',
+                background: 'rgba(255, 255, 255, 0.01)'
               }}
             >
-              <span>{doc.name}</span>
-              <span className="badge badge-sm" style={{ background: 'var(--card-bg)', color: 'var(--accent)' }}>{doc.type}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {doc.type === 'PDF' ? '📕' : '🖼️'} {doc.name}
+              </span>
+              <span className="badge badge-sm" style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--accent)', border: '1px solid var(--border-color)' }}>
+                {doc.type}
+              </span>
             </a>
           ))}
         </div>
