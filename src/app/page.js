@@ -20,9 +20,11 @@ import Agenda from '@/components/modules/Agenda';
 import Ajustos from '@/components/modules/Ajustos';
 import Projectes from '@/components/modules/Projectes';
 import Recursos from '@/components/modules/Recursos';
+import Cercador from '@/components/modules/Cercador';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Tauler (Dashboard)', icon: Icons.home },
+  { key: 'cercador', label: 'Cercador General', icon: Icons.search },
   { key: 'tasques', label: 'Tasques', icon: Icons.check },
   { key: 'manteniment', label: 'Manteniment', icon: Icons.wrench },
   { key: 'inventari', label: 'Inventari i Peces', icon: Icons.box },
@@ -43,6 +45,7 @@ const NAV_ITEMS = [
 
 const MODULES = {
   dashboard: Dashboard,
+  cercador: Cercador,
   tasques: Tasques,
   manteniment: Manteniment,
   inventari: Inventari,
@@ -156,7 +159,7 @@ export default function Home() {
 
         {/* Main Content */}
         <main className="main-content">
-          <ActiveComponent />
+          <ActiveComponent onNavigate={navigate} />
         </main>
       </div>
     </DataProvider>
