@@ -468,6 +468,7 @@ export function DataProvider({ children }) {
 
     seguretat,
     addSeguretat: addItem('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),
+    addMultipleSeguretat: addMultipleItems('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),
     updateSeguretat: updateItem('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),
     deleteSeguretat: deleteItem('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),
 
