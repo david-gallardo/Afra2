@@ -1,9 +1,13 @@
 'use client';
+import { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Icons, formatDate, formatCurrency } from '@/components/UI';
 
 export default function Dashboard() {
   const { loaded, tasques, despeses, combustible, manteniment, inventari, farmaciola, seguretat, ajustos } = useData();
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailMsg, setEmailMsg] = useState('');
+
   if (!loaded) return null;
 
   const pendingTasques = tasques.filter(t => !t.done).length;
@@ -29,6 +33,51 @@ export default function Dashboard() {
   const horesCombustible = combustible.reduce((max, c) => Math.max(max, parseFloat(c.horasMotor) || 0), 0);
   const horesManteniment = manteniment.reduce((max, m) => Math.max(max, parseFloat(m.horasMotor) || 0), 0);
   const horesActuals = Math.max(horesInicials, horesCombustible, horesManteniment);
+
+  // 1. Cercar alertes de seguretat, farmaciola, despensa i manteniment (per al visor d'alertes en temps real)
+  const avui = new Date();
+  
+  const comprovaAlerta = (item, dataCamp = 'caducidad') => {
+    const dataStr = item[dataCamp];
+    if (!dataStr) return null;
+    const data = new Date(dataStr);
+    const diffDays = Math.ceil((data - avui) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 30) {
+      return { item, diffDays, dataStr };
+    }
+    return null;
+  };
+
+  const alertesSeguretat = seguretat.map(item => comprovaAlerta(item, 'caducidad')).filter(Boolean);
+  const alertesFarmaciola = farmaciola.map(item => comprovaAlerta(item, 'caducidad')).filter(Boolean);
+  const alertesDespensa = despensa.map(item => comprovaAlerta(item, 'caducidad')).filter(Boolean);
+  const alertesManteniment = manteniment.map(item => comprovaAlerta(item, 'proximaRevision')).filter(Boolean);
+
+  const totalAlertesActives = alertesSeguretat.length + alertesFarmaciola.length + alertesDespensa.length + alertesManteniment.length;
+
+  const triggerEmail = async () => {
+    setEmailLoading(true);
+    setEmailMsg('');
+    try {
+      const res = await fetch('/api/cron/reminders', {
+        method: 'GET',
+        headers: {
+          'x-user-password': 'doble2Vi.'
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEmailMsg('Correu enviat correctament! 📬');
+      } else {
+        setEmailMsg(`Error: ${data.error || 'Intenta-ho de nou'} ❌`);
+      }
+    } catch (err) {
+      setEmailMsg('Error de connexió a internet ❌');
+    } finally {
+      setEmailLoading(false);
+      setTimeout(() => setEmailMsg(''), 4000);
+    }
+  };
 
   return (
     <>
@@ -57,6 +106,92 @@ export default function Dashboard() {
       </div>
 
       <div className="dashboard-grid">
+        {/* TARGETA DE CONTROL I ALERTES ACTIVES */}
+        <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>📋</span> Estat de Control i Alertes Actives
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: 15 }}>
+            Revisió en viu d'elements caducats, a punt de caducar (menys de 30 dies) o revisions preventives de motor a fer.
+          </p>
+
+          {totalAlertesActives === 0 ? (
+            <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.08)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.2)', color: 'var(--green)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+              <span>✅</span> No hi ha cap alerta de control activa a bord. Tot el material, provisions i revisions estan al dia!
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
+              {alertesSeguretat.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🚨 Seguretat i Emergències</h4>
+                  <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                    {alertesSeguretat.map(({ item, diffDays }) => (
+                      <li key={item.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border-color)' }}>
+                        • {item.nombre} <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', float: 'right', fontWeight: 'bold' }}>{diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {alertesFarmaciola.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', color: 'var(--orange)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>💊 Farmaciola i Salut</h4>
+                  <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                    {alertesFarmaciola.map(({ item, diffDays }) => (
+                      <li key={item.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border-color)' }}>
+                        • {item.nombre} <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', float: 'right', fontWeight: 'bold' }}>{diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {alertesDespensa.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🥫 Despensa i Provisions</h4>
+                  <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                    {alertesDespensa.map(({ item, diffDays }) => (
+                      <li key={item.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border-color)' }}>
+                        • {item.nombre} <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', float: 'right', fontWeight: 'bold' }}>{diffDays < 0 ? `Caducat fa ${Math.abs(diffDays)} dies` : `Caduca en ${diffDays} dies`}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {alertesManteniment.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🔧 Revisions de Manteniment</h4>
+                  <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                    {alertesManteniment.map(({ item, diffDays }) => (
+                      <li key={item.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border-color)' }}>
+                        • {item.titulo} <span style={{ color: diffDays < 0 ? 'var(--red)' : 'var(--orange)', float: 'right', fontWeight: 'bold' }}>{diffDays < 0 ? `Revisió vençuda fa ${Math.abs(diffDays)} d.` : `Revisió en ${diffDays} d.`}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={triggerEmail} 
+              disabled={emailLoading}
+              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            >
+              {emailLoading ? '⏳ S\'està enviant...' : '📧 Enviar Informe per Email (Brevo)'}
+            </button>
+            {emailMsg && (
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>
+                {emailMsg}
+              </span>
+            )}
+          </div>
+        </div>
+
         {pendingTasques > 0 && (
           <div className="dashboard-card">
             <h3>{Icons.check} Properes Tasques</h3>
@@ -78,14 +213,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {(expiringFarmaciola + expiringSeguretat) > 0 && (
-          <div className="dashboard-card">
-            <h3>{Icons.shield} Alertes de Caducitat</h3>
-            {expiringFarmaciola > 0 && <p style={{ color: 'var(--red)', fontSize: '0.9rem', marginBottom: 6 }}>🏥 {expiringFarmaciola} medicament(s) a punt de caducar</p>}
-            {expiringSeguretat > 0 && <p style={{ color: 'var(--red)', fontSize: '0.9rem' }}>🦺 {expiringSeguretat} element(s) de seguretat caducats o propers</p>}
-          </div>
-        )}
-
         <div className="dashboard-card">
           <h3>{Icons.wrench} Últims Manteniments</h3>
           {manteniment.length === 0 ? (
@@ -102,7 +229,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="dashboard-card" style={{ gridColumn: 'span 1' }}>
+        <div className="dashboard-card">
           <h3>🔧 Fitxa Ràpida Motor</h3>
           <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div><span className="text-muted">Model:</span> <span className="font-bold">{ajustos.motor}</span></div>
