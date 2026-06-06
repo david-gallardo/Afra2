@@ -9,6 +9,7 @@ export default function Manteniment() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({});
   const [search, setSearch] = useState('');
+  const [selectedYear, setSelectedYear] = useState('Tots');
 
   if (!loaded) return null;
 
@@ -21,7 +22,19 @@ export default function Manteniment() {
     setModal(false);
   };
 
-  const filtered = manteniment.filter(i => i.titulo?.toLowerCase().includes(search.toLowerCase()));
+  const years = Array.from(new Set(manteniment.map(item => {
+    if (!item.fecha) return null;
+    return new Date(item.fecha).getFullYear().toString();
+  }).filter(Boolean))).sort((a, b) => b - a);
+
+  const filtered = manteniment.filter(i => {
+    const matchesSearch = i.titulo?.toLowerCase().includes(search.toLowerCase());
+    if (!matchesSearch) return false;
+    if (selectedYear === 'Tots') return true;
+    if (!i.fecha) return false;
+    return new Date(i.fecha).getFullYear().toString() === selectedYear;
+  });
+
   const categories = ['General', 'Motor', 'Casc i Cua', 'Electricitat', 'Veles i Axarcia', 'Electrònica', 'Fondeig', 'Fontaneria', 'Altres'];
 
   return (
@@ -37,6 +50,26 @@ export default function Manteniment() {
         </div>
         <button className="btn btn-primary" onClick={openNew}>{Icons.plus} Nou registre</button>
       </div>
+
+      {years.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+          <button 
+            className={`btn btn-sm ${selectedYear === 'Tots' ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setSelectedYear('Tots')}
+          >
+            Tots els anys
+          </button>
+          {years.map(y => (
+            <button
+              key={y}
+              className={`btn btn-sm ${selectedYear === y ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setSelectedYear(y)}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      )}
       {filtered.length === 0 ? (
         <EmptyState icon={Icons.wrench} message="Sense registres de manteniment. Afegeix la primera revisió." />
       ) : (
