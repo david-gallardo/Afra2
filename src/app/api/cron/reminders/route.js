@@ -50,7 +50,7 @@ export async function GET(req) {
       .filter(res => res !== null && res.diffDays <= 30);
 
     // 4. Filtrar revisions de manteniment properes o vençudes (< 30 dies)
-    const mantenimentsPropers = manteniment
+    const mantenimentsPropers = manteniments
       .map(item => comprovaCaducitat(item, 'proximaRevision'))
       .filter(res => res !== null && res.diffDays <= 30);
 

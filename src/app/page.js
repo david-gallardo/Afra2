@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DataProvider } from '@/context/DataContext';
+import Login from '@/components/Login';
 import { Icons } from '@/components/UI';
 import Dashboard from '@/components/modules/Dashboard';
 import Tasques from '@/components/modules/Tasques';
@@ -63,6 +64,16 @@ const MODULES = {
 export default function Home() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('erp_session_user');
+    if (savedUser && (savedUser === 'gallardopujol@gmail.com' || savedUser === 'lauravinyals@gmail.com')) {
+      setUser(savedUser);
+    }
+    setAuthLoading(false);
+  }, []);
 
   const navigate = (key) => {
     setActiveModule(key);
@@ -70,6 +81,19 @@ export default function Home() {
   };
 
   const ActiveComponent = MODULES[activeModule] || Dashboard;
+
+  if (authLoading) {
+    return <div style={{ background: '#0A1628', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4FC3F7', fontWeight: 600 }}>Carregant sessió...</div>;
+  }
+
+  if (!user) {
+    return (
+      <Login onSuccess={(email) => {
+        localStorage.setItem('erp_session_user', email);
+        setUser(email);
+      }} />
+    );
+  }
 
   return (
     <DataProvider>

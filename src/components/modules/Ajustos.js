@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '@/context/DataContext';
 
 export default function Ajustos() {
@@ -9,9 +9,9 @@ export default function Ajustos() {
   const [msg, setMsg] = useState('');
 
   // Sincronitza un cop les dades de DataContext estan carregades
-  useState(() => {
+  useEffect(() => {
     if (loaded) setForm({ ...ajustos });
-  }, [loaded]);
+  }, [loaded, ajustos]);
 
   if (!loaded) return null;
 
@@ -41,6 +41,65 @@ export default function Ajustos() {
       setMsg(`Error en la importació: ${res.error} ❌`);
     }
     setTimeout(() => setMsg(''), 5000);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('erp_session_user');
+    window.location.reload();
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Exportem a JPEG comprimit al 70% de qualitat per mantenir la imatge per sota de 150-200KB
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        
+        const updatedAjustos = { ...form, bgImage: compressedBase64 };
+        setForm(updatedAjustos);
+        saveAjustos(updatedAjustos);
+        setMsg('Imatge de fons del login actualitzada correctament! 📸');
+        setTimeout(() => setMsg(''), 3000);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleResetImage = () => {
+    const updatedAjustos = { ...form };
+    delete updatedAjustos.bgImage;
+    setForm(updatedAjustos);
+    saveAjustos(updatedAjustos);
+    setMsg('S\'ha restaurat la imatge de fons per defecte. ⛵');
+    setTimeout(() => setMsg(''), 3000);
   };
 
   return (
@@ -92,15 +151,59 @@ export default function Ajustos() {
           <button className="btn btn-primary" onClick={save} style={{ marginTop: 12 }}>Desar Configuració</button>
         </div>
 
-        {/* SEGURETAT DE LES DADES & EXPORTACIONS */}
+        {/* IMATGE DE FONS DEL LOGIN */}
         <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
-          <h3>💾 Importació i Còpies de Seguretat (JSON)</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: 12 }}>Com que aquesta aplicació desa les dades directament al teu navegador (localStorage), et recomanem exportar una còpia de seguretat periòdicament per no perdre res en netejar el navegador.</p>
+          <h3>📸 Imatge de Fons del Login</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: 12 }}>
+            Personalitza la imatge de fons que es mostra a la pantalla de login.
+            La imatge es redimensionarà i comprimirà automàticament per estalviar espai i es sincronitzarà al núvol amb Supabase.
+          </p>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{
+              width: '120px',
+              height: '80px',
+              borderRadius: '6px',
+              backgroundImage: `url(${form.bgImage || '/proa.png'})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              border: '1px solid var(--border-color)'
+            }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+                id="bg-image-upload"
+              />
+              <label htmlFor="bg-image-upload" className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
+                📷 Selecciona una imatge
+              </label>
+              {form.bgImage && (
+                <button className="btn btn-danger btn-sm" onClick={handleResetImage}>
+                  🗑️ Restableix la imatge per defecte
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* SEGURETAT DE LES DADES & COPIES DE SEGURETAT */}
+        <div className="dashboard-card" style={{ gridColumn: 'span 2' }}>
+          <h3>💾 Còpies de Seguretat i Núvol (Supabase)</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: 12 }}>
+            Les teves dades es sincronitzen de forma segura i automàtica al núvol amb <strong>Supabase</strong>. 
+            No has de patir si esborres la memòria cau o neteges el navegador. No obstant, per seguretat addicional, 
+            pots seguir baixant còpies locals en format JSON.
+          </p>
           
-          <button className="btn btn-ghost" onClick={handleExport} style={{ marginBottom: 20 }}>📥 Baixar Còpia de Seguretat (.json)</button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: 20 }}>
+            <button className="btn btn-ghost" onClick={handleExport}>📥 Baixar Còpia de Seguretat (.json)</button>
+            <button className="btn btn-danger" onClick={handleLogout} style={{ background: '#F87171', color: '#0A1628', border: 'none' }}>🚪 Tancar Sessió (Sortir)</button>
+          </div>
           
           <div className="form-group">
-            <label>Importar Dades (Enganxa el contingut del fitxer JSON exportat a sota)</label>
+            <label>Importar i Restaurar dades a Supabase des de JSON (Enganxa el contingut a sota)</label>
             <textarea 
               value={importInput} 
               onChange={e => setImportInput(e.target.value)} 
@@ -108,7 +211,7 @@ export default function Ajustos() {
               style={{ minHeight: 100, fontSize: '0.75rem', fontFamily: 'monospace' }}
             />
           </div>
-          <button className="btn btn-danger" onClick={handleImport} style={{ marginTop: 8 }}>🔄 Importar i Sobreescriure Dades</button>
+          <button className="btn btn-danger" onClick={handleImport} style={{ marginTop: 8 }}>🔄 Importar i Sobreescriure dades al Núvol</button>
         </div>
       </div>
     </>
