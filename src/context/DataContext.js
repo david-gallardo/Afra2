@@ -270,6 +270,25 @@ export function DataProvider({ children }) {
     return newItem;
   }, []);
 
+  const addMultipleItems = useCallback((tableName, collection, setCollection, storageKey) => async (itemsArray) => {
+    const newItems = itemsArray.map((item, idx) => ({
+      ...item,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 5) + idx
+    }));
+    const updated = [...newItems, ...collection];
+    setCollection(updated);
+    saveToStorage(storageKey, updated);
+    
+    try {
+      for (const item of newItems) {
+        await supabase.from(tableName).upsert({ id: item.id, data: item });
+      }
+    } catch (err) {
+      console.error(`Error de sincronització insert multiple a ${tableName}:`, err);
+    }
+    return newItems;
+  }, []);
+
   const updateItem = useCallback((tableName, collection, setCollection, storageKey) => async (id, updates) => {
     const originalItem = collection.find(item => item.id === id);
     const updatedItem = { ...originalItem, ...updates };
@@ -393,6 +412,7 @@ export function DataProvider({ children }) {
 
     farmaciola,
     addFarmaciola: addItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
+    addMultipleFarmaciola: addMultipleItems('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     updateFarmaciola: updateItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     deleteFarmaciola: deleteItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
 
