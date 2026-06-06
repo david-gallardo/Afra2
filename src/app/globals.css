@@ -375,6 +375,12 @@ textarea {
   transition: all var(--transition);
   white-space: nowrap;
 }
+.btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 
 .btn-primary {
   background: var(--accent);
@@ -729,10 +735,34 @@ textarea {
   color: var(--text-muted);
   padding: 4px;
   transition: color var(--transition);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .check-item-delete:hover {
   color: var(--red);
 }
+.check-item-edit {
+  background: none;
+  color: var(--text-muted);
+  padding: 4px;
+  transition: color var(--transition);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.check-item-edit:hover {
+  color: var(--accent);
+}
+.check-item-delete svg,
+.check-item-edit svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 
 /* ===== EXPIRY HELPERS ===== */
 .expiry-ok { color: var(--green); }

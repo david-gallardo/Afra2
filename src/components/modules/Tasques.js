@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import { EmptyState, Icons } from '@/components/UI';
+import { Modal, EmptyState, Icons } from '@/components/UI';
 
 export default function Tasques() {
   const { loaded, tasques, addTarea, updateTarea, deleteTarea } = useData();
   const [input, setInput] = useState('');
   const [prioridad, setPrioridad] = useState('Normal');
+  const [modal, setModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [form, setForm] = useState({});
 
   if (!loaded) return null;
 
@@ -14,6 +17,18 @@ export default function Tasques() {
   const toggle = (id, done) => updateTarea(id, { done: !done });
   const pending = tasques.filter(t => !t.done);
   const done = tasques.filter(t => t.done);
+
+  const openEdit = (item) => {
+    setForm({ ...item });
+    setEditItem(item);
+    setModal(true);
+  };
+
+  const save = () => {
+    if (!form.titulo?.trim()) return;
+    updateTarea(editItem.id, { titulo: form.titulo.trim(), prioridad: form.prioridad });
+    setModal(false);
+  };
 
   const prioColor = (p) => p === 'Alta' ? 'var(--red)' : p === 'Baixa' ? 'var(--green)' : 'var(--accent)';
 
@@ -39,7 +54,8 @@ export default function Tasques() {
               <div key={item.id} className="check-item">
                 <input type="checkbox" checked={false} onChange={() => toggle(item.id, item.done)} />
                 <span className="check-item-text">{item.titulo}</span>
-                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: prioColor(item.prioridad), marginRight: 4 }}>{item.prioridad}</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: prioColor(item.prioridad), marginRight: 8 }}>{item.prioridad}</span>
+                <button className="check-item-edit" onClick={() => openEdit(item)} style={{ marginRight: 4 }}>{Icons.edit}</button>
                 <button className="check-item-delete" onClick={() => deleteTarea(item.id)}>{Icons.trash}</button>
               </div>
             ))}
@@ -52,6 +68,7 @@ export default function Tasques() {
                   <div key={item.id} className="check-item done">
                     <input type="checkbox" checked onChange={() => toggle(item.id, item.done)} />
                     <span className="check-item-text">{item.titulo}</span>
+                    <button className="check-item-edit" onClick={() => openEdit(item)} style={{ marginRight: 4 }}>{Icons.edit}</button>
                     <button className="check-item-delete" onClick={() => deleteTarea(item.id)}>{Icons.trash}</button>
                   </div>
                 ))}
@@ -60,6 +77,29 @@ export default function Tasques() {
           )}
         </>
       )}
+
+      <Modal isOpen={modal} onClose={() => setModal(false)} title="Editar Tasca">
+        <div className="form-group">
+          <label>Títol de la tasca</label>
+          <input 
+            value={form.titulo || ''} 
+            onChange={e => setForm({ ...form, titulo: e.target.value })} 
+            placeholder="Ex: Netejar filtre d'aigua de mar..." 
+          />
+        </div>
+        <div className="form-group">
+          <label>Prioritat</label>
+          <select 
+            value={form.prioridad || 'Normal'} 
+            onChange={e => setForm({ ...form, prioridad: e.target.value })}
+          >
+            <option>Baixa</option>
+            <option>Normal</option>
+            <option>Alta</option>
+          </select>
+        </div>
+        <button className="btn btn-primary btn-full mt-2" onClick={save}>Desar Canvis</button>
+      </Modal>
     </>
   );
 }
