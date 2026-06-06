@@ -1,0 +1,119 @@
+-- ========================================================
+-- ESQUEMA DE BASE DE DADES PER A L'ERP S/Y PUMA (SUPABASE)
+-- Copy/paste this script inside the "SQL Editor" of Supabase
+-- ========================================================
+
+-- Disable Row Level Security (RLS) by default for ease of use in personal apps, 
+-- or you can enable it later if you set up authentication.
+
+-- 1. TAULA MANTENIMENT
+CREATE TABLE IF NOT EXISTS manteniment (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 2. TAULA INVENTARI
+CREATE TABLE IF NOT EXISTS inventari (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 3. TAULA DESPENSA
+CREATE TABLE IF NOT EXISTS despensa (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 4. TAULA FARMACIOLA
+CREATE TABLE IF NOT EXISTS farmaciola (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 5. TAULA SEGURETAT
+CREATE TABLE IF NOT EXISTS seguretat (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 6. TAULA COMPRES
+CREATE TABLE IF NOT EXISTS compras (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 7. TAULA BITÀCOLA
+CREATE TABLE IF NOT EXISTS bitacola (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 8. TAULA FINANCES / DESPESES
+CREATE TABLE IF NOT EXISTS despeses (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 9. TAULA TASQUES
+CREATE TABLE IF NOT EXISTS tasques (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 10. TAULA COMBUSTIBLE
+CREATE TABLE IF NOT EXISTS combustible (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 11. TAULA DOCUMENTS
+CREATE TABLE IF NOT EXISTS documents (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 12. TAULA VELES
+CREATE TABLE IF NOT EXISTS veles (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 13. TAULA AGENDA
+CREATE TABLE IF NOT EXISTS agenda (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 14. TAULA PROJECTES DIY
+CREATE TABLE IF NOT EXISTS projectes (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 15. TAULA RECURSOS MULTIMÈDIA
+CREATE TABLE IF NOT EXISTS recursos (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
+
+-- 16. TAULA AJUSTOS
+CREATE TABLE IF NOT EXISTS ajustos (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  data JSONB NOT NULL
+);
