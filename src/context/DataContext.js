@@ -344,6 +344,36 @@ export function DataProvider({ children }) {
     }
   }, [farmaciola]);
 
+  const eliminarDuplicatsFarmaciola = useCallback(async () => {
+    const vistos = new Set();
+    const aMantenir = [];
+    const aEsborrarIds = [];
+    
+    for (const item of farmaciola) {
+      const nomNormalitzat = item.nombre?.toLowerCase().trim();
+      if (vistos.has(nomNormalitzat)) {
+        aEsborrarIds.push(item.id);
+      } else {
+        vistos.add(nomNormalitzat);
+        aMantenir.push(item);
+      }
+    }
+    
+    if (aEsborrarIds.length === 0) return 0;
+    
+    setFarmaciola(aMantenir);
+    saveToStorage(STORAGE_KEYS.farmaciola, aMantenir);
+    
+    try {
+      for (const id of aEsborrarIds) {
+        await supabase.from('farmaciola').delete().eq('id', id);
+      }
+    } catch (err) {
+      console.error('Error de sincronització eliminarDuplicats:', err);
+    }
+    return aEsborrarIds.length;
+  }, [farmaciola]);
+
   const importData = useCallback(async (jsonData) => {
     try {
       const data = JSON.parse(jsonData);
@@ -434,6 +464,7 @@ export function DataProvider({ children }) {
     updateFarmaciola: updateItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     deleteFarmaciola: deleteItem('farmaciola', farmaciola, setFarmaciola, STORAGE_KEYS.farmaciola),
     setAllFarmaciolaPending,
+    eliminarDuplicatsFarmaciola,
 
     seguretat,
     addSeguretat: addItem('seguretat', seguretat, setSeguretat, STORAGE_KEYS.seguretat),

@@ -4,7 +4,7 @@ import { useData } from '@/context/DataContext';
 import { Modal, AccordionItem, EmptyState, Icons, getExpiryClass, getExpiryLabel } from '@/components/UI';
 
 export default function Farmaciola() {
-  const { loaded, farmaciola, addFarmaciola, addMultipleFarmaciola, updateFarmaciola, deleteFarmaciola, setAllFarmaciolaPending } = useData();
+  const { loaded, farmaciola, addFarmaciola, addMultipleFarmaciola, updateFarmaciola, deleteFarmaciola, setAllFarmaciolaPending, eliminarDuplicatsFarmaciola } = useData();
   const [modal, setModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({});
@@ -78,6 +78,10 @@ export default function Farmaciola() {
   const pendingItems = farmaciola.filter(i => i.estado === 'Pendent').length;
   const inStockItems = farmaciola.filter(i => !i.estado || i.estado === 'A bord').length;
 
+  const téDuplicats = farmaciola.some((item, index) => {
+    return farmaciola.findIndex(f => f.nombre?.toLowerCase().trim() === item.nombre?.toLowerCase().trim()) !== index;
+  });
+
   return (
     <>
       <div className="page-header">
@@ -117,6 +121,20 @@ export default function Farmaciola() {
               style={{ border: '1px dashed var(--orange)', color: 'var(--orange)' }}
             >
               ⚠️ Tot Pendent
+            </button>
+          )}
+          {téDuplicats && (
+            <button 
+              className="btn btn-ghost" 
+              onClick={async () => {
+                const count = await eliminarDuplicatsFarmaciola();
+                if (count > 0) {
+                  alert(`🔄 S'han eliminat ${count} productes duplicats correctament!`);
+                }
+              }} 
+              style={{ border: '1px dashed var(--red)', color: 'var(--red)' }}
+            >
+              ✨ Netejar Duplicats
             </button>
           )}
         </div>
