@@ -51,17 +51,7 @@ export default function Projectes() {
                   badge="Pendent" 
                   badgeClass="low"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0 12px' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={false} 
-                      onChange={() => toggle(item.id, item.done)} 
-                      style={{ width: 22, height: 22, cursor: 'pointer', accentColor: 'var(--accent)' }} 
-                    />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Marca com a completat</span>
-                  </div>
-                  
-                  <div className="item-details" style={{ paddingTop: 0 }}>
+                  <div className="item-details" style={{ paddingTop: 12 }}>
                     <div style={{ gridColumn: 'span 2' }}>
                       <span className="item-detail-label">Descripció: </span>
                       <p className="item-detail-value" style={{ marginTop: 4, color: 'var(--text-main)' }}>{item.descripcion}</p>
@@ -83,6 +73,7 @@ export default function Projectes() {
                   </div>
 
                   <div className="item-actions">
+                    <button className="btn btn-primary btn-sm" style={{ backgroundColor: 'var(--green)', color: '#0A1628' }} onClick={() => toggle(item.id, item.done)}>✓ Fet</button>
                     <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}>{Icons.edit} Editar</button>
                     <button className="btn btn-danger btn-sm" onClick={() => deleteProjecte(item.id)}>{Icons.trash} Esborrar</button>
                   </div>
@@ -102,22 +93,13 @@ export default function Projectes() {
                   badge="Fet" 
                   badgeClass="stock"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0 12px' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={true} 
-                      onChange={() => toggle(item.id, item.done)} 
-                      style={{ width: 22, height: 22, cursor: 'pointer', accentColor: 'var(--accent)' }} 
-                    />
-                    <span style={{ fontSize: '0.9rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>Mantenir com a completat</span>
-                  </div>
-
-                  <div className="item-details" style={{ paddingTop: 0, opacity: 0.6 }}>
+                  <div className="item-details" style={{ paddingTop: 12, opacity: 0.6 }}>
                     <div style={{ gridColumn: 'span 2' }}><span className="item-detail-label">Descripció: </span><span className="item-detail-value">{item.descripcion}</span></div>
                     {item.materials && <div style={{ gridColumn: 'span 2', marginTop: 4 }}><span className="item-detail-label">Materials: </span><span className="item-detail-value">{item.materials}</span></div>}
                   </div>
 
                   <div className="item-actions">
+                    <button className="btn btn-ghost btn-sm" onClick={() => toggle(item.id, item.done)}>🔄 Desfer (Pendent)</button>
                     <button className="btn btn-danger btn-sm" onClick={() => deleteProjecte(item.id)}>{Icons.trash} Esborrar</button>
                   </div>
                 </AccordionItem>
