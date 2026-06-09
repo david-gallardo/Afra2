@@ -132,6 +132,11 @@ export default function Documents() {
                   </a>
                 </>
               )}
+              {item.fileUrl && (
+                <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm">
+                  👁️ Obrir fitxer gran
+                </a>
+              )}
               <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}>{Icons.edit} Editar</button>
               <button className="btn btn-danger btn-sm" onClick={() => deleteDocumento(item.id)}>{Icons.trash} Esborrar</button>
             </div>
@@ -149,8 +154,8 @@ export default function Documents() {
         </div>
         <div className="form-group" style={{ border: '1px dashed var(--border-color)', padding: 12, borderRadius: 6, marginBottom: 12 }}>
           <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Adjuntar fitxer (PDF o Imatge, màx. 1.5MB)</label>
-          <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ fontSize: '0.85rem' }} />
-          {form.fileName && (
+          <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ fontSize: '0.85rem' }} disabled={!!form.fileUrl} />
+          {form.fileName && form.fileData && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
               <span style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>📎 Fitxer: {form.fileName}</span>
               <button 
@@ -163,6 +168,29 @@ export default function Documents() {
               </button>
             </div>
           )}
+          
+          <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 10 }}>
+            <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>O bé enllaçar fitxer gran a la carpeta docs/</label>
+            <input 
+              value={form.fileUrl ? form.fileUrl.replace('/docs/', '') : ''} 
+              onChange={e => {
+                const val = e.target.value;
+                const path = val ? `/docs/${val}` : '';
+                setForm({ 
+                  ...form, 
+                  fileUrl: path, 
+                  fileName: val || '', 
+                  fileData: ''
+                });
+              }}
+              placeholder="Ex: manual_motor.pdf" 
+              style={{ fontSize: '0.85rem' }}
+              disabled={!!form.fileData}
+            />
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+              Per a fitxers grans (com manuals de 90MB), copia el fitxer a la teva carpeta local <code>public/docs/</code>, escriu el nom del fitxer a dalt i fes un <code>git push</code>.
+            </p>
+          </div>
         </div>
         <button className="btn btn-primary btn-full mt-2" onClick={save}>Desar Document</button>
       </Modal>
